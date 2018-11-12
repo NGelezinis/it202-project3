@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>map</title>
+    <link href="style.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="https://unpkg.com/dexie@latest/dist/dexie.js"></script>
+
+    <script>
+          //
+          // Define your database
+          //
+          var db = new Dexie("library_database");
+          db.version(1).stores({
+              library: 'info,xCoord,yCoord'
+          });
+    </script>
+    <style>
+      /* Always set the map height explicitly to define the size of the div
+       * element that contains the map. */
+      #map {
+        height: 100%;
+      }
+      /* Optional: Makes the sample page fill the window. */
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <button type="button">map</button>
+    <div id="map"></div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+  
+
+
+
+    <script>
+
+      // This example displays a marker at the center of Australia.
+      // When the user clicks the marker, an info window opens.
+
+      function initMap() {
+        var chicago = {lat: 41.8781, lng: -87.6298};
+        var map = new google.maps.Map(document.getElementById('map'), {
+          zoom: 11,
+          center: chicago
+        });
+                  
+        db.library.toArray(function(stuff) {
+          var latnum = 0;
+          var longnum = 0;
+          navigator.geolocation.getCurrentPosition(function(location){
+            latnum = location.coords.latitude;
+            longnum = location.coords.longitude;
+            var marker = new google.maps.Marker({
+              position: {lat: latnum, lng: longnum},
+              map: map,
+              title: 'you are here'
+            });
+          });
+          for (b = 0; b < stuff.length; b++){
+            var marker = new google.maps.Marker({
+              position: {lat: parseFloat(stuff[b].yCoord), lng: parseFloat(stuff[b].xCoord)},
+              map: map,
+              title: stuff[b].info
+            });
+            //var infowindow = new google.maps.InfoWindow({
+            //  content: "<h1>" + stuff[b].info + "</h1>"
+            //});
+            //marker.addListener('click', function() {
+            //  infowindow.open(map, marker);
+            //});
+          };
+        });
+      };
+    </script>
+      
+    <script>
+  
+      $("button").on("click", function(){
+          db.library.count(function(sizeoftable) {
+              if(sizeoftable){
+                 initMap();
+              }
+              else{
+                alert("you have no favorites, add at least one favorite to see map");
+              };
+              
+          });
+      });
+
+    </script>
+
+
+    <script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAdfRuXA5OguTSq6Q4idd9_56_or5F1vWw">
+    </script>
+  </body>
+</html>
